@@ -1,0 +1,22 @@
+body.espace {
+    background: url('../img/bg-espace.jpg') center / cover;
+    color: #000;
+}
+
+.espace #legende {
+    background: rgba(255, 255, 255, 0.5);
+    padding: 15px
+}
+
+.espace .mur {
+    background: url('../img/mur_espace.png') center / 100%;
+}
+
+.espace .sol {
+    background: url('../img/sol_espace.jpg') center / 100%;
+}
+
+.espace .fantome {
+    background: url('../img/f_espace.png') no-repeat top left;
+    animation: sprite32 .8s steps(3) infinite;
+}

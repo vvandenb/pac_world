@@ -1,0 +1,29 @@
+body.volcan {
+    background: url('../img/bg-volcan.jpg') center / cover;
+    color: #fff;
+}
+
+.volcan #legende {
+    background-color: #4E0000;
+    padding: 15px;
+    border-radius: 10%;
+}
+
+.volcan .mur {
+    background: url('../img/mur_volcan.png') center / 100%;
+}
+
+.volcan .sol {
+    background: url('../img/sol_volcan.png') center / 100%;
+}
+
+.volcan .fantome {
+    background: url('../img/f_volcan.png') no-repeat left top;
+    animation: sprite_volcan .8s steps(3) infinite;
+}
+
+@keyframes sprite_volcan {
+    100% {
+        background-position-x: -144px;
+    }
+}

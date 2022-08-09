@@ -1,0 +1,29 @@
+body.archipel {
+    background: url('../img/bg-archipel.jpg') center / cover;
+    color: #fff;
+}
+
+.archipel #legende {
+    background: rgb(22, 171, 9);
+    padding: 15px;
+}
+
+.archipel .fantome {
+    background: url('../img/f-archipel.png') no-repeat top left;
+    animation: sprite4 .8s steps(3) infinite;
+}
+
+@keyframes sprite4 {
+    100% {
+        background-position-x: -144px;
+    }
+}
+
+
+.archipel .mur {
+    background: url('../img/mur_archipel.jpg') center / 100%;
+}
+
+.archipel .sol {
+    background: url('../img/sol_archipel.jpg') center / 100%;
+}

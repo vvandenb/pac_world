@@ -1,0 +1,22 @@
+body.savane {
+    background: url('../img/bg-savane2.jpg') center / cover;
+    color: rgb(255, 255, 255);
+}
+    
+.savane #legende {
+    background: #181817;
+    padding: 15px;
+}
+
+.savane .fantome {
+    background: url('../img/f-savane.png') no-repeat left top;
+    animation: sprite4 .8s steps(3) infinite;
+}
+
+.savane .mur {
+    background: url('../img/mur_savane.jpg') center / 100%
+}
+
+.savane .sol {
+    background: url('../img/sol_savane.jpg') center / 100%
+}

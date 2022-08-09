@@ -1,0 +1,34 @@
+body.ville {
+    background: url('../img/bg-ville.jpg') center / cover;
+    color: #fff;
+}
+
+.ville #legende {
+    background: rgba(0, 0, 0, 0.8);
+    padding: 15px;
+}
+
+.ville .fantome {
+    background: url('../img/f_ville.png') no-repeat left top;
+    animation: sprite_ville .8s steps(4) infinite;
+}
+
+/* JUSTE PR VILLE */
+
+.ville #jeu {
+    background: url('../img/bg_map_ville.png') center / 100%;
+}
+
+@keyframes sprite_ville {
+    100% {
+        background-position-x: -192px;
+    }
+    /* -tailleCase * 3 */
+}
+
+@keyframes sprite32 {
+    100% {
+        background-position-x: -144px;
+    }
+    /* -tailleCase * 3 */
+}

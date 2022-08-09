@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>PacWorld</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css?family=Press+Start+2P" rel="stylesheet">
+    <link href="img/favicon.png" rel="icon">
+    <style>
+        html {
+            min-height: 100%;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100%;
+            display: flex;
+            background: #000;
+            font-family: 'Press Start 2P';
+            color: #fff;
+        }
+
+        table {
+            width: 100%;
+            max-width: 1080px;
+            margin: auto;
+        }
+
+        td {
+            vertical-align: top;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        #jeu {
+            height: 528px;
+            width: 720px;
+            position: relative;
+        }
+
+        #jeu>div {
+            position: absolute;
+            height: 48px;
+            width: 48px;
+        }
+
+        #bob {
+            width: 32px !important;
+            margin-left: 8px;
+            /* permet d avoir des sprites de 32/48 */
+            background: url('img/bob-m.png') no-repeat left top;
+            animation: sprite3 .8s steps(3) infinite;
+            z-index: 1;
+        }
+
+        #bob.f {
+            background: url('img/bob-f.png') no-repeat left top;
+        }
+
+        .fantome {
+            z-index: 1;
+        }
+
+        .gum {
+            background: url('img/gum.png') no-repeat center;
+        }
+
+        .cout {
+            background: url('img/cout.png') no-repeat center;
+        }
+
+        .btn {
+            color: #d5a4a4;
+            background: #982e2e;
+            padding: 5px 5px 10px;
+            cursor: pointer;
+            border-radius: 5px;
+            display: block;
+            box-shadow: 0 -5px rgba(0, 0, 0, 0.2) inset;
+            width: 200px;
+            margin: 15px auto;
+            font-weight: bold;
+        }
+
+        .btn:hover {
+            background: #c97c7c;
+            box-shadow: 0 -2px rgba(0, 0, 0, 0.2) inset;
+            color: #fff;
+        }
+
+        @keyframes sprite3 {
+            100% {
+                background-position-x: -96px;
+            }
+            /* -tailleCase * 3 */
+        }
+    </style>
+    <!-- Skins de Niveaux -->
+    <link href="skin/ville.css" rel="stylesheet">
+    <link href="skin/montagne.css" rel="stylesheet">
+    <link href="skin/volcan.css" rel="stylesheet">
+    <link href="skin/archipel.css" rel="stylesheet">
+    <link href="skin/espace.css" rel="stylesheet">
+    <link href="skin/savane.css" rel="stylesheet">
+    <script src="jquery.js"></script>
+    <script src="fonctions.js"></script>
+</head>
+
+<body>
+
+    <table>
+        <tr>
+            <td id='titre'>
+                <h1> Pac World </h1>
+            </td>
+            <td class="niveaux-div">
+                Niveaux:
+                <br>
+                <span class="niveau">
+                    0
+                </span>
+            </td>
+        </tr>
+        <tr>
+            <td id="jeu"></td>
+            <td>
+                <div id="legende">
+                    Score :&nbsp;&nbsp;&nbsp;
+                    <span class="score">
+                        0
+                    </span>
+                    <br></br>
+                    <div>
+                        Vies :&nbsp;&nbsp;&nbsp;
+                        <img src="img/vie.png" alt="" class="vie">
+                        <img src="img/vie.png" alt="" class="vie">
+                        <img src="img/vie.png" alt="" class="vie">
+                    </div>
+                    <br></br>
+                    <div class="couteau-div">
+                        Couteaux :
+                    </div>
+                    <br><br>
+                    Personnages :
+                    <div class="btn" onclick="$('#bob').removeClass('f')">Bob</div>
+                    <div class="btn" onclick="$('#bob').addClass('f')">Bobette</div>
+                </div>
+            </td>
+        </tr>
+    </table>
+
+    <script>
+        /* Code couleurs pour la map (8 possibilités):
+         *
+         * 0 == noir   == 000000 == mur
+         * 1 == bleu   == 0000ff == chemin
+         * 2 == vert   == 00ff00 == gum
+         * 3 == cyan  == 00ffff == diams
+         * 4 == rouge  == ff0000 == fantome
+         * 5 == violet == ff00ff == posDepartPac (pacMan est sur un chemin libre)
+         * 6 == orange == ffff00 == custom
+         * 7 == blanc  == ffffff == custom
+         * + 2 fois plus de pixels peuvent être débloqués avec les pixels transparents
+         *
+         * */
+
+        /* Directions
+            h: haut
+            b: bas
+            g: gauche
+            d: droite
+            s: stop
+        */
+
+        var fps = 60; // 30fps est pas mal pour un ordinateur peu puissant
+        var tailleCase = 48;
+        var pause = false;
+
+        var score = 0;
+        var scoreGum = 10;
+
+        var speedBob = 3;
+        var speedF = 3;
+
+        var direction = {
+            h: [0, -1],
+            b: [0, 1],
+            g: [-1, 0],
+            d: [1, 0],
+            s: [0, 0],
+        }
+
+        var bg = {
+            h: -144,
+            d: -96,
+            b: 0,
+            g: -48,
+        }
+
+        var directionInverse = {
+            h: 'b',
+            d: 'g',
+            b: 'h',
+            g: 'd',
+            s: 's'
+        }
+
+        var niveaux = {
+            'savane': {
+                passe: 0
+            },
+            'montagne': {
+                passe: 0
+            },
+            'volcan': {
+                passe: 0
+            },
+            'ville': {
+                passe: 0
+            },
+            'archipel': {
+                passe: 0
+            },
+            'espace': {
+                passe: 0
+            }
+        }
+
+        var bob = {
+            pv: 3,
+            cout: 0,
+            nextDirection: 's',
+            direction: 's',
+            invincible: false
+        }
+
+        var fantome = []; // <- tous les fantomes
+
+        var tick = false;
+
+        var levels = ['savane', 'ville', 'volcan', 'montagne', 'archipel', 'espace'];
+
+        function genMap(niv = false) {
+            // var niv = 'montagne';
+
+            if (!levels.length) {
+                // je gagne la game
+                alert('GG ! Fin de la partie.');
+                window.location.reload();
+            }
+
+
+            // selection de map
+            if (!niv) {
+                // random
+                niv = levels[Math.floor(Math.random() * levels.length)]
+            }
+
+            levels.splice(levels.indexOf(niv), 1);
+
+            bob = {
+                nextDirection: 's',
+                direction: 's',
+                invincible: false
+            }
+
+            fantome = [];
+
+            //reset le html
+            $('#jeu').html('');
+
+            //j ajoute la classe de mon skin a mon body
+            $('body').removeClass().addClass(niv);
+
+            //genere map
+            imageToMap('img/map_' + niv + '.png', function (map) {
+
+                var fId = 1; // 'f' + fId
+
+                //afficher la map
+                for (let x = 0; x < map.length; x++) {
+
+                    for (let y = 0; y < map[x].length; y++) {
+
+                        const valCase = map[x][y];
+
+                        var pos = {
+                            left: x * tailleCase,
+                            top: y * tailleCase,
+                        }
+
+                        // 0 == mur
+                        if (valCase == 0) {
+                            // je rajoute une case et je la positionne
+                            $('#jeu').append($('<div class="mur"></div>').css(pos));
+                        } else {
+                            $('#jeu').append($('<div class="sol x' + x + ' y' + y + '"></div>').css(pos));
+                        }
+
+                        // 2 == gum
+                        if (valCase == 2) {
+                            $('#jeu').append($('<div class="gum"></div>').css(pos));
+                        }
+
+                        // 3 == diamant (couteau)
+                        if (valCase == 3) {
+                            $('#jeu').append($('<div class="cout"></div>').css(pos));
+                        }
+
+                        // 4 == spawn fantome
+                        if (valCase == 4) {
+                            $('#jeu').append($('<div class="fantome f' + fId + '"></div>').css(pos));
+
+                            fantome.push({
+                                id: fId,
+                                // fantome.position.x me permet d acceder a la pos x d un fantome
+                                position: [x * tailleCase, y * tailleCase],
+                                direction: 's'
+                            });
+
+                            fId++;
+
+                        }
+
+                        // 5 == spawn bob
+                        if (valCase == 5) {
+                            $('#jeu').append($('<div id="bob"></div>').css(pos));
+                            bob.position = [x * tailleCase, y * tailleCase];
+                            bob.positionDepart = [x * tailleCase, y * tailleCase];
+                        }
+                    }
+                }
+
+                ready();
+            });
+        }
+
+        function ready() {
+            // desactivation des rendus precedents
+            clearInterval(tick);
+            //
+            tick = setInterval(function () {
+                // Boucle de rendu
+
+                //------------------------------
+                //         mouvement bob
+                //------------------------------
+
+                // je verifie si bob est sur une case
+                if (surCase(bob.position)) {
+                    var caseLibre = checkCases(bob.position);
+
+                    if (caseLibre.includes(bob.nextDirection)) {
+                        bob.direction = bob.nextDirection;
+                        bob.nextDirection = 's';
+                        $('#bob').css({ backgroundPositionY: bg[bob.direction] })
+                    } else if (!caseLibre.includes(bob.direction)) {
+                        bob.direction = 's';
+                    }
+                }
+
+                bob.position[0] += direction[bob.direction][0] * speedBob;
+                bob.position[1] += direction[bob.direction][1] * speedBob;
+
+                move($('#bob'), bob.position);
+
+                //------------------------------
+                //         mouvement fantomes
+                //------------------------------
+
+                // je verifie si les fantomes sont sur une case
+                fantome.forEach(function (F) {
+                    if (surCase(F.position)) {
+                        var caseLibre = checkCases(F.position);
+
+                        if (caseLibre.length > 1) {
+                            //si au moins 2 directions, on enleve la direction inverse
+                            var inverse = directionInverse[F.direction];
+                            caseLibre.splice(caseLibre.indexOf(inverse), 1);
+                        }
+
+                        F.direction = caseLibre[Math.floor(Math.random() * caseLibre.length)];
+                    }
+
+                    F.position[0] += direction[F.direction][0] * speedF;
+                    F.position[1] += direction[F.direction][1] * speedF;
+                    move($('.f' + F.id), F.position);
+                    $('.f' + F.id).css({
+                        backgroundPositionY: bg[F.direction]
+                    })
+                });
+
+                //----------------------------------------
+                //         collisions de bob avec le jeu
+                //----------------------------------------
+
+                var collider = testCollision($('#bob'), $('.gum, .cout, .fantome'));
+
+                if (collider.hasClass('gum')) {
+                    // on tombe sur une gum
+                    collider.removeClass('gum');
+                    score += scoreGum;
+                    if (!$('.gum').length) {
+                        // passage au lvl suivant ou victoire
+                        genMap();
+                    }
+                } else if (collider.hasClass('cout')) {
+                    // couteaux
+                    if ($('.couteau-div img').length < 2) {
+                        collider.removeClass('cout');
+                        $('.couteau-div').append('<img src="img/cout.png">')
+                    }
+                } else if (collider.hasClass('fantome')) {
+                    // fantomes
+                    if ($('.couteau-div img').length > 0) {
+                        // je tue le fantome
+                        collider.remove();
+                        score += 100;
+                        $('.couteau-div img').first().remove()
+                    } else if (!bob.invincible) {
+                        if ($('.vie').length == 1) {
+                            // GAME OVER
+                            alert('GAME OVER !');
+                            window.location.reload();
+                        }
+
+                        $('.vie').first().remove()
+
+                        bob.invincible = true
+                        setTimeout(function () {
+                            bob.invincible = false;
+                        }, 3000);
+
+                        bob.position = [bob.positionDepart[0], bob.positionDepart[1]];
+
+                        bob.direction = 's';
+                        bob.nextDirection = 's';
+                        move($('#bob'), bob.position);
+                    }
+                }
+
+                $('.score').text(score);
+
+            }, 1000 / fps)
+        }
+
+        function move(entity, pos) {
+            // decomposition de la position: [x, y]
+            var x = pos[0];
+            var y = pos[1];
+            entity.css({
+                left: x,
+                top: y
+            })
+        }
+        genMap()
+
+
+        /*-----------------------------------------------------
+                    eventListeners: gestion du clavier
+        -----------------------------------------------------*/
+
+        addEventListener("keydown", function (e) {
+            switch (e.keyCode) {
+                case 38: // haut
+                case 90: // Z
+                    e.preventDefault();
+                    bob.nextDirection = 'h';
+                    break;
+                case 40: // bas
+                case 83: // S
+                    e.preventDefault();
+                    bob.nextDirection = 'b';
+                    break;
+                case 39: // droite
+                case 68: //D
+                    e.preventDefault(); // a mettre ici sinon preventDefault() tout les raccourcis habituels
+                    bob.nextDirection = 'd';
+                    break;
+                case 37: // gauche
+                case 81: // Q
+                    e.preventDefault();
+                    bob.nextDirection = 'g';
+                    break;
+                case 88: // X
+                    e.preventDefault();
+                    bob.nextDirection = 's';
+                    break;
+                case 27: // echap
+                    // opérateur ternaire:
+                    pause = pause ? false : true;
+                    // ceci est l'équivalent de
+                    // if(pause) {
+                    //    pause = false
+                    // } else {
+                    //    pause = false;
+                    // }
+                    // beaucoup moins digeste =)
+                    break;
+            }
+        });
+    </script>
+</body>
+
+</html>

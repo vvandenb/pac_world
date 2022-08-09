@@ -1,0 +1,34 @@
+body.montagne {
+    background: url('../img/bg-montagne.jpg') center / cover;
+    color: rgb(255, 255, 255);
+}
+
+.montagne #legende {
+    background: rgba(12, 104, 53, 0.85);
+    padding: 15px;
+}
+
+.montagne .mur {
+    background: url('../img/mur_montagne.png') center / 100%;
+}
+
+.montagne .sol {
+    background: url('../img/sol_montagne.png') center / 100%;
+}
+
+.montagne .fantome {
+    width: 50px !important;
+    margin-left: 0px;
+    /* permet d avoir des sprites de 32/48 */
+    background: url('../img/f_montagne.png') no-repeat left top;
+    animation: sprite_montagne .8s steps(3) infinite;
+}
+
+@keyframes sprite_montagne {
+    100% {
+        background-position-x: -144px;
+    }
+    /* -tailleCase * 3 */
+}
+
+$('#niveau').addClass(levels)
